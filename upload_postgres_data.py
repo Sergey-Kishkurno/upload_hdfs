@@ -32,25 +32,26 @@ def _download_to_files():
         result = cursor.fetchall()
 
     except psycopg2.Error as e:
-        print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
+        print("Error performing query:", e)
         if conn:
             conn.rollback()
     finally:
         cursor.close()
 
     db_tables = [x[0] for x in result]
-    # print(db_tables)
+    print(db_tables)
 
-    dir_name = os.path.join(os.getcwd()+'/postgres_data')
+    # dir_name = os.path.join(os.getcwd()+'/postgres_data')
+    # os.makedirs(dir_name, exist_ok=True)
+
+    dir_name = '/home/user/airflow/dags/postgres_data/'
     os.makedirs(dir_name, exist_ok=True)
+    # /home/user/aiflow/dags/data
 
-    # os.makedirs(
-    #     os.path.join(os.getcwd(), '/postgres_data'),
-    #     # mode=0o777,
-    #     exist_ok=True
-    # )
 
     for table in db_tables:
+
+        print(f"Working with table: {table}")
 
         conn = psycopg2.connect(**db_creds)
         if not conn:
@@ -68,7 +69,7 @@ def _download_to_files():
                 cursor.copy_expert(f'COPY {table} TO STDOUT WITH HEADER CSV', csv_file)
 
         except psycopg2.Error as e:
-            print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
+            print("Error performing query:", e)
             if conn:
                 conn.rollback()
         finally:
@@ -79,15 +80,13 @@ def upload_postgres_data():
 
     _download_to_files()
 
-    # client = InsecureClient(f'http://127.0.0.1:50070/', user='user')
-    # # create directories in HDFS
-    # client.makedirs('/from_postgres')
-    #
-    # # create file in HDFS
-    # # data = [{"name": "Anne", "salary": 10000}, {"name": "Victor", "salary": 9500}]
-    #
-    # # upload file to HDFS -
-    # client.upload('/from_postgres', './postgres_data', n_threads=0)
+    client = InsecureClient(f'http://127.0.0.1:50070/', user='user')
+
+    # create directories in HDFS
+    client.makedirs('/from_postgres')
+
+    # upload file to HDFS -
+    client.upload('/from_postgres', './postgres_data', n_threads=0)
 
 
 if __name__ == '__main__':

@@ -76,15 +76,15 @@ def _download_to_files():
 
         result = response.json()
 
-        dir_name = os.path.join(
-                        '/Users/imac/Projects/data_engineering/upload_hdfs/api_data/' +
-                        date.strftime("%Y-%m-%d")
-                    )
-        os.makedirs(dir_name, exist_ok=True)
-
-        # dir_name = os.path.join('/home/user/data_' + str(date.today()))
+        # dir_name = os.path.join(
+        #                 '/Users/imac/Projects/data_engineering/upload_hdfs/api_data/' +
+        #                 date.strftime("%Y-%m-%d")
+        #             )
         # os.makedirs(dir_name, exist_ok=True)
-        # # /home/user/data
+
+        dir_name = os.path.join('/home/user/airflow/dags/api_data/' + date.strftime("%Y-%m-%d"))
+        os.makedirs(dir_name, exist_ok=True)
+        # /home/user/aiflow/dags/data
 
         file_name = os.path.join(dir_name, loading_date['date']+'.txt')
 
