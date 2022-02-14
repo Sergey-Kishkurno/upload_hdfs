@@ -27,7 +27,7 @@ dag = DAG(
 
 
 # starting dummy task
-t0 = DummyOperator(
+t1 = DummyOperator(
     task_id='starting_point',
     dag=dag,
 )
@@ -53,5 +53,5 @@ t2 = DummyOperator(
     dag=dag,
 )
 
-
-t0 >> t1_2 >> t2
+t1 >> t1_1 >> t2
+t1 >> t1_2 >> t2
