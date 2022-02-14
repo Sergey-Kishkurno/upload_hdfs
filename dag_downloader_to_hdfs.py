@@ -5,7 +5,7 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
 
 from upload_postgres_data import upload_postgres_data
-#from upload_api_data import upload_api_data
+from upload_api_data import upload_api_data
 
 
 default_args = {
@@ -26,20 +26,20 @@ dag = DAG(
       )
 
 
-# dummy task
+# starting dummy task
 t0 = DummyOperator(
     task_id='starting_point',
     dag=dag,
 )
 
+# Next task downloads from API in format off .txt (utf-8) files
+t1_1 = PythonOperator(
+    task_id='upload_api_data',
+    dag=dag,
+    python_callable=upload_api_data
+)
 
-# t1_1 = PythonOperator(
-#     task_id='upload_api_data',
-#     dag=dag,
-#     python_callable=upload_api_data
-# )
-
-# Next task downloads from 'dshop_bu' DB (which contains already data from 'dshop' DB)
+# Next task downloads from 'dshop_bu' DB (which contains already data from 'dshop' DB) in csv format
 # - so, no need for another postgres task
 t1_2 = PythonOperator(
     task_id = 'upload_postgres_data',
@@ -47,7 +47,7 @@ t1_2 = PythonOperator(
     python_callable=upload_postgres_data
 )
 
-# dummy task
+# ending dummy task
 t2 = DummyOperator(
     task_id='finish_point',
     dag=dag,
