@@ -1,16 +1,12 @@
 import os
-import json
 
 import psycopg2
 import psycopg2.extensions
 from hdfs import InsecureClient # library docs https://hdfscli.readthedocs.io/en/latest/index.html
 
 
-
 db_creds = {
-    #  keywords matter - are predefined
     'host': 'localhost',
-    # 'dbname': 'dshop',
     'dbname': 'dshop_bu',
     'user': 'pguser',
     'password': 'secret'
@@ -45,6 +41,15 @@ def _download_to_files():
     db_tables = [x[0] for x in result]
     # print(db_tables)
 
+    dir_name = os.path.join(os.getcwd()+'/postgres_data')
+    os.makedirs(dir_name, exist_ok=True)
+
+    # os.makedirs(
+    #     os.path.join(os.getcwd(), '/postgres_data'),
+    #     # mode=0o777,
+    #     exist_ok=True
+    # )
+
     for table in db_tables:
 
         conn = psycopg2.connect(**db_creds)
@@ -53,12 +58,13 @@ def _download_to_files():
             return None
         cursor = conn.cursor()
 
+        # TODO: Change queries for security reasons
         query_for_a_table = f"SELECT * FROM {table}"
 
         try:
             cursor.execute(query_for_a_table)
 
-            with open(file= 'data/'+ table + '.csv', mode='w') as csv_file:
+            with open(file='postgres_data/'+table+'.csv', mode='w') as csv_file:
                 cursor.copy_expert(f'COPY {table} TO STDOUT WITH HEADER CSV', csv_file)
 
         except psycopg2.Error as e:
@@ -69,20 +75,19 @@ def _download_to_files():
             cursor.close()
 
 
-
 def upload_postgres_data():
 
     _download_to_files()
 
-    client = InsecureClient(f'http://127.0.0.1:50070/', user='user')
-    # create directories in HDFS
-    client.makedirs('/from_postgres')
-
-    # create file in HDFS
-    # data = [{"name": "Anne", "salary": 10000}, {"name": "Victor", "salary": 9500}]
-
-    # upload file to HDFS -
-    client.upload('/from_postgres', './postgres_data', n_threads=0)
+    # client = InsecureClient(f'http://127.0.0.1:50070/', user='user')
+    # # create directories in HDFS
+    # client.makedirs('/from_postgres')
+    #
+    # # create file in HDFS
+    # # data = [{"name": "Anne", "salary": 10000}, {"name": "Victor", "salary": 9500}]
+    #
+    # # upload file to HDFS -
+    # client.upload('/from_postgres', './postgres_data', n_threads=0)
 
 
 if __name__ == '__main__':
