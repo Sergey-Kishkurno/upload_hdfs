@@ -3,6 +3,8 @@ import json
 from datetime import datetime, date, timedelta
 import requests
 from urllib.parse import urljoin
+import csv
+
 
 from hdfs import InsecureClient # library docs https://hdfscli.readthedocs.io/en/latest/index.html
 
@@ -53,20 +55,16 @@ def _download_to_files():
         'content-type': "application/json"
     }
 
-
     dates = _get_date_list(
         '2021-12-10',
         '2021-12-14'
     )
-    print(dates)
-
 
     for date in dates:
 
         loading_date = {
             'date': date.strftime("%Y-%m-%d")
         }
-
         response = requests.get(
                         url_get,
                         headers=_headers,
@@ -99,15 +97,13 @@ def upload_api_data():
 
     _download_to_files()
 
-    # client = InsecureClient(f'http://127.0.0.1:50070/', user='user')
-    # # create directories in HDFS
-    # client.makedirs('/from_api')
-    #
-    # # create file in HDFS
-    # #
-    #
-    # # upload file to HDFS -
-    # client.upload('/from_api', './api_data', n_threads=0)
+    client = InsecureClient(f'http://127.0.0.1:50070/', user='user')
+
+    # create directories in HDFS
+    client.makedirs('/from_api')
+
+    # upload file to HDFS -
+    client.upload('/from_api', './api_data', n_threads=0)
 
 
 if __name__ == '__main__':
