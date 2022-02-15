@@ -100,10 +100,10 @@ def upload_api_data():
     client = InsecureClient(f'http://127.0.0.1:50070/', user='user')
 
     # create directories in HDFS
-    client.makedirs('/from_api')
+    client.makedirs('/bronze/from_api')
 
     # upload file to HDFS -
-    client.upload('/from_api', './api_data', n_threads=0)
+    client.upload('/bronze/from_api', './api_data', n_threads=0)
 
 
 if __name__ == '__main__':
