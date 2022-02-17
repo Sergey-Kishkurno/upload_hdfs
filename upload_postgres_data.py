@@ -6,14 +6,17 @@ from hdfs import InsecureClient # library docs https://hdfscli.readthedocs.io/en
 
 
 db_creds = {
-    'host': 'localhost',
+    'host': '0.0.0.0',
+    'port': '5432',
     'dbname': 'dshop_bu',
     'user': 'pguser',
     'password': 'secret'
 }
 
 
-def _download_to_files():
+def upload_postgres_data():
+
+    client = InsecureClient(f'http://127.0.0.1:50070/', user='user')
 
     query_table_names = "SELECT table_name FROM information_schema.tables " \
                         "WHERE table_schema='public' " \
@@ -42,12 +45,8 @@ def _download_to_files():
     db_tables = [x[0] for x in result]
     print(db_tables)
 
-    dir_name = os.path.join('/Users/imac/Projects/data_engineering/upload_hdfs'+'/postgres_data')
-    os.makedirs(dir_name, exist_ok=True)
-
-    # dir_name = '/home/user/airflow/dags/postgres_data/'
-    # os.makedirs(dir_name, exist_ok=True)
-    # # /home/user/aiflow/dags/data
+    dir_name = '/bronze/from_postgres'
+    client.makedirs(dir_name)
 
     for table in db_tables:
 
@@ -65,8 +64,10 @@ def _download_to_files():
         try:
             cursor.execute(query_for_a_table)
 
-            with open(file=dir_name+table+'.csv', mode='w') as csv_file:
-                cursor.copy_expert(f'COPY {table} TO STDOUT WITH HEADER CSV', csv_file)
+            file_name = dir_name + '/' + table + '.csv'
+
+            with client.write(file_name, overwrite=True) as csv_file:
+                cursor.copy_expert(f"COPY {table} TO STDOUT WITH HEADER CSV", csv_file)
 
         except psycopg2.Error as e:
             print("Error performing query:", e)
@@ -75,19 +76,6 @@ def _download_to_files():
         finally:
             cursor.close()
             conn.close()
-
-
-def upload_postgres_data():
-
-    _download_to_files()
-
-    # client = InsecureClient(f'http://127.0.0.1:50070/', user='user')
-    #
-    # # create directories in HDFS
-    # client.makedirs('/bronze/from_postgres')
-    #
-    # # upload file to HDFS -
-    # client.upload('/from_postgres', './postgres_data', n_threads=0)
 
 
 if __name__ == '__main__':

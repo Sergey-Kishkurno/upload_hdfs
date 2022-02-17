@@ -18,7 +18,10 @@ def _get_date_list(start_date: str, end_date: str):
     return [start + timedelta(days=x) for x in range(0, (end - start).days)]
 
 
-def _download_to_files():
+def upload_api_data():
+
+    client = InsecureClient(f'http://127.0.0.1:50070/', user='user')
+
     api = {
         'creds': {
             'username': 'rd_dreams',
@@ -45,7 +48,6 @@ def _download_to_files():
                     )
                 ).json().get("access_token")
 
-    # print(f"API jwt: {api_jwt}")
     api["headers_get"]["authorization"] = "JWT {}".format(api_jwt)
 
     url_get = api['url'] + "/out_of_stock"
@@ -82,28 +84,15 @@ def _download_to_files():
         #             )
         # os.makedirs(dir_name, exist_ok=True)
 
-        dir_name = os.path.join('/home/user/airflow/dags/api_data/' + date.strftime("%Y-%m-%d"))
-        os.makedirs(dir_name, exist_ok=True)
-        # /home/user/aiflow/dags/data
+        dir_name = os.path.join('/bronze/from_api/' + loading_date['date'])
+        client.makedirs(dir_name)
 
         file_name = os.path.join(dir_name, loading_date['date']+'.txt')
 
-        with open(file_name, 'w+', encoding='utf-8') as f:
-            f.write(json.dumps(result))
-            print(f"Wrote data to file {file_name}")
+        with client.write(file_name, encoding='utf-8') as f:
+            json.dump(result, f)
 
-
-def upload_api_data():
-
-    _download_to_files()
-
-    client = InsecureClient(f'http://127.0.0.1:50070/', user='user')
-
-    # create directories in HDFS
-    client.makedirs('/bronze/from_api')
-
-    # upload file to HDFS -
-    client.upload('/bronze/from_api', './api_data', n_threads=0)
+        print(f"Wrote data to file {file_name}")
 
 
 if __name__ == '__main__':
