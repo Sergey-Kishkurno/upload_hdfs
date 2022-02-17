@@ -87,7 +87,7 @@ def upload_api_data():
         dir_name = os.path.join('/bronze/from_api/' + loading_date['date'])
         client.makedirs(dir_name)
 
-        file_name = os.path.join(dir_name, loading_date['date']+'.txt')
+        file_name = os.path.join(dir_name, loading_date['date']+'.json')
 
         with client.write(file_name, encoding='utf-8') as f:
             json.dump(result, f)
